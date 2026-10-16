@@ -588,3 +588,99 @@ body:has(.swap-page-layout) .workspace .swap-card {
 .contract-status strong{font-weight:600;color:#82994a;letter-spacing:.8px}
 @media(max-width:900px){.contract-status{margin:0 0 35px 0}}
 @media(max-width:650px){.contract-status{margin-bottom:28px;padding:7px 10px;font-size:8px}}
+
+
+/* Transaction history functionality */
+.transaction-refresh,.transaction-mode button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--border,#d9dfd1);border-radius:999px;background:rgba(255,255,255,.62);padding:10px 14px;color:inherit;font:inherit;cursor:pointer}
+.transaction-refresh:disabled,.transaction-mode button:disabled{opacity:.5;cursor:not-allowed}
+.transaction-mode{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0}
+.transaction-mode button.active{background:#d9f37a;border-color:#d9f37a;color:#1e2a18}
+.transaction-mode .live-indicator{margin-left:auto}
+.transaction-error{padding:12px 14px;margin:12px 0;border:1px solid #e8b7a7;background:#fff4ef;color:#7a3220;border-radius:12px;font-size:13px}
+.transaction-table td small{display:block;margin-top:5px;color:#778071;font-size:11px;overflow-wrap:anywhere}
+.transaction-hash{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.transaction-hash a{display:inline-flex;align-items:center;gap:5px;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.transaction-kind{font-size:9px;letter-spacing:.12em;font-weight:700;color:#536b36}
+.transaction-status{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#f1f0e8;font-size:11px;white-space:nowrap}
+.status-confirmed{background:#e4f4d4;color:#315b22}
+.status-failed{background:#ffe6df;color:#9a2f20}
+.status-pending,.status-submitted{background:#f5efd6;color:#78611b}
+.transaction-status-detail{max-width:220px}
+@media(max-width:720px){.transaction-mode .live-indicator{margin-left:0}.transaction-table-wrap{overflow-x:auto}.transaction-table{min-width:720px}}
+
+
+/* GAMGAM cinematic intro — isolated overlay; leaves existing app styles intact */
+.gamgam-intro{
+  position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;
+  color:#293126;background:
+    radial-gradient(ellipse at 50% 42%,rgba(218,231,188,.82) 0%,rgba(245,246,237,.72) 31%,transparent 66%),
+    linear-gradient(135deg,#f8f8f0 0%,#eef1e4 52%,#f9f8f0 100%);
+  isolation:isolate;opacity:1;visibility:visible;
+  transition:opacity .68s cubic-bezier(.22,.72,.22,1),visibility .68s;
+}
+.gamgam-intro--leaving{opacity:0;visibility:hidden;pointer-events:none}
+.intro-grain{position:absolute;inset:-50%;pointer-events:none;opacity:.16;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");mix-blend-mode:multiply;animation:intro-grain-drift 10s linear infinite}
+.intro-halo{position:absolute;left:50%;top:43%;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);filter:blur(1px)}
+.intro-halo--one{width:min(78vw,780px);aspect-ratio:1;background:radial-gradient(circle,rgba(193,215,135,.22),rgba(213,225,184,.08) 42%,transparent 70%);animation:intro-halo-breathe 4.6s ease-in-out both}
+.intro-halo--two{width:min(54vw,520px);aspect-ratio:1;border:1px solid rgba(128,151,83,.12);box-shadow:0 0 80px rgba(151,177,98,.12),inset 0 0 70px rgba(151,177,98,.08);animation:intro-halo-in 1.8s .2s both}
+.intro-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(100%,800px);padding:32px 24px 48px;text-align:center}
+.intro-logo-stage{position:relative;width:clamp(190px,27vw,330px);aspect-ratio:1;display:grid;place-items:center;opacity:0;transform:translateY(22px) scale(.78);animation:intro-logo-arrive 1.25s cubic-bezier(.16,1,.3,1) .16s forwards}
+.intro-globe{position:relative;z-index:2;width:83%;height:83%;object-fit:contain;filter:drop-shadow(0 18px 23px rgba(89,111,43,.15));animation:intro-globe-float 4.2s ease-in-out 1.1s infinite;user-select:none}
+.intro-logo-ring{position:absolute;left:50%;top:50%;border:1px solid rgba(118,143,68,.24);border-radius:50%;transform:translate(-50%,-50%) rotate(-25deg)}
+.intro-logo-ring--outer{width:100%;height:34%;animation:intro-ring-spin 14s linear infinite}
+.intro-logo-ring--inner{width:88%;height:56%;border-color:rgba(149,171,101,.28);transform:translate(-50%,-50%) rotate(53deg);animation:intro-ring-spin-reverse 18s linear infinite}
+.intro-logo-ring i,.intro-orbit i{position:absolute;left:12%;top:0;width:7px;height:7px;border-radius:50%;background:#9bb46b;box-shadow:0 0 14px rgba(141,169,81,.65)}
+.intro-logo-ring--inner i{left:78%;top:12%;width:5px;height:5px;background:#d4dfb1}
+.intro-logo-glint{position:absolute;z-index:3;width:42%;height:42%;border-radius:50%;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.48) 48%,transparent 64%);filter:blur(7px);transform:translate(-28%,-35%) rotate(25deg);opacity:0;animation:intro-glint 1.2s 1.2s ease-out forwards}
+.intro-wordmark{margin-top:4px;opacity:0;transform:translateY(15px);animation:intro-wordmark-arrive .85s cubic-bezier(.16,1,.3,1) 1.1s forwards}
+.intro-brand-name{font-family:Manrope,'DM Sans',sans-serif;font-weight:800;font-size:clamp(43px,7.5vw,78px);line-height:.95;letter-spacing:.13em;padding-left:.13em;color:#30372a;text-shadow:0 2px 0 rgba(255,255,255,.65)}
+.intro-brand-name span{color:#849b55}
+.intro-tagline{display:flex;align-items:center;justify-content:center;gap:13px;margin-top:19px;font:500 10px 'DM Mono',monospace;letter-spacing:.27em;color:#727c60;opacity:0;animation:intro-tagline-arrive .7s ease 1.65s forwards}
+.intro-tagline span{width:24px;height:1px;background:linear-gradient(90deg,transparent,#9cac7b)}
+.intro-tagline span:last-child{transform:rotate(180deg)}
+.intro-bottom{display:flex;align-items:center;justify-content:center;gap:13px;margin-top:36px;color:#9aa18b;font:9px 'DM Mono',monospace;letter-spacing:.18em;opacity:0;animation:intro-bottom-arrive .7s ease 2.05s forwards}
+.intro-bottom-line{display:block;width:clamp(18px,4vw,48px);height:1px;background:#d4dac7}
+.intro-orbit{position:absolute;left:50%;top:43%;border:1px solid rgba(133,157,86,.13);border-radius:50%;pointer-events:none}
+.intro-orbit--one{width:min(74vw,720px);height:min(28vw,260px);transform:translate(-50%,-50%) rotate(-24deg);animation:intro-orbit-reveal 1.8s .35s both}
+.intro-orbit--two{width:min(64vw,610px);height:min(40vw,380px);transform:translate(-50%,-50%) rotate(32deg);animation:intro-orbit-reveal 1.8s .55s both}
+.intro-orbit--three{width:min(54vw,520px);height:min(48vw,460px);transform:translate(-50%,-50%) rotate(-62deg);border-style:dashed;opacity:.48;animation:intro-orbit-reveal 2s .7s both}
+.intro-orbit--one i{left:17%;top:9%}.intro-orbit--two i{left:80%;top:24%;width:4px;height:4px}.intro-orbit--three i{left:30%;top:92%;width:5px;height:5px}
+.intro-corner{position:absolute;z-index:3;bottom:30px;color:#a0a68f;font:9px 'DM Mono',monospace;letter-spacing:.18em;opacity:0;animation:intro-corner-arrive .6s 2.2s forwards}
+.intro-corner--left{left:32px}.intro-corner--right{right:32px}
+.intro-skip{position:absolute;z-index:5;top:26px;right:30px;border:1px solid rgba(120,139,86,.28);border-radius:999px;background:rgba(255,255,255,.42);padding:10px 13px;color:#697655;font:9px 'DM Mono',monospace;letter-spacing:.12em;transition:background .2s,border-color .2s}
+.intro-skip:hover{background:rgba(255,255,255,.8);border-color:#9eb47a}
+.intro-skip span{margin-left:8px}
+.intro-progress{position:absolute;z-index:4;left:0;right:0;bottom:0;height:3px;background:rgba(130,151,91,.12);overflow:hidden}
+.intro-progress span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#b7ca8b,#7f9950,#d7e2bb);transform:scaleX(0);transform-origin:left;animation:intro-progress 4.8s linear both}
+.gamgam-intro--leaving .intro-progress span{animation-play-state:paused}
+@keyframes intro-logo-arrive{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes intro-wordmark-arrive{to{opacity:1;transform:translateY(0)}}
+@keyframes intro-tagline-arrive{to{opacity:1}}
+@keyframes intro-bottom-arrive{to{opacity:1}}
+@keyframes intro-corner-arrive{to{opacity:1}}
+@keyframes intro-halo-breathe{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}45%{opacity:1}100%{opacity:.75;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes intro-halo-in{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes intro-ring-spin{to{transform:translate(-50%,-50%) rotate(335deg)}}
+@keyframes intro-ring-spin-reverse{to{transform:translate(-50%,-50%) rotate(-307deg)}}
+@keyframes intro-globe-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(1.1deg)}}
+@keyframes intro-glint{0%{opacity:0;transform:translate(-55%,-35%) rotate(25deg)}35%{opacity:.7}100%{opacity:0;transform:translate(55%,35%) rotate(25deg)}}
+@keyframes intro-orbit-reveal{from{opacity:0;scale:.82}to{opacity:1;scale:1}}
+@keyframes intro-grain-drift{to{transform:translate3d(2%,1%,0)}}
+@keyframes intro-progress{to{transform:scaleX(1)}}
+@media(max-width:600px){
+  .intro-center{padding:20px 18px 42px}
+  .intro-logo-stage{width:clamp(180px,62vw,270px)}
+  .intro-wordmark{margin-top:10px}
+  .intro-brand-name{font-size:clamp(40px,12vw,61px);letter-spacing:.1em;padding-left:.1em}
+  .intro-tagline{font-size:8px;letter-spacing:.19em;gap:8px;margin-top:15px}
+  .intro-bottom{font-size:7px;letter-spacing:.11em;gap:8px;margin-top:27px}
+  .intro-corner{bottom:18px;font-size:7px;letter-spacing:.1em}
+  .intro-corner--left{left:15px}.intro-corner--right{right:15px}
+  .intro-skip{top:16px;right:15px;padding:9px 11px;font-size:8px}
+  .intro-orbit--one{width:92vw;height:38vw}
+  .intro-orbit--two{width:82vw;height:55vw}
+  .intro-orbit--three{width:70vw;height:66vw}
+}
+@media(prefers-reduced-motion:reduce){
+  .intro-grain,.intro-halo,.intro-logo-stage,.intro-globe,.intro-logo-ring,.intro-logo-glint,.intro-wordmark,.intro-tagline,.intro-bottom,.intro-orbit,.intro-corner,.intro-progress span{animation:none!important;opacity:1!important;transform:none!important}
+}

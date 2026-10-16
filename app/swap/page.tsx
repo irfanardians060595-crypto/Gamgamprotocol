@@ -78,7 +78,42 @@ function SwapApp() {
  useEffect(()=>{let live=true;getCurrencies(toChain).then(t=>{if(live&&t.length){setToTokens(t);setToToken(prev=>t.find(x=>x.address.toLowerCase()===prev.address.toLowerCase())||t[0])}}).catch(()=>{if(live){const t=FALLBACK_TOKENS[toChain];if(t){setToTokens(t);setToToken(t[0])}}});return()=>{live=false}},[toChain]);
  const selectedChain=useMemo(()=>chains.find(c=>c.id===fromChain),[chains,fromChain]);
  async function requestQuote(){setError('');setNotice('');setQuote(null);if(!isConnected||!address){setError('Connect your wallet first to request a route.');return}if(!amount||Number(amount)<=0){setError('Enter an amount greater than zero.');return}setLoading(true);try{const raw=parseUnits(amount,fromToken.decimals).toString();const q=await getQuote({user:address,originChainId:fromChain,destinationChainId:toChain,originCurrency:fromToken.address,destinationCurrency:toToken.address,amount:raw});setQuote(q);if(!q?.steps?.length)setNotice('Relay returned a quote, but no executable steps were included. Review the response before continuing.')}catch(e:any){setError(e?.message||'Could not get a route from Relay. Please try again.')}finally{setLoading(false)}}
- async function execute(){if(!quote?.steps?.length){setError('No executable quote is available. Get a fresh quote first.');return}setBusy(true);setError('');setNotice('');try{for(const step of quote.steps){for(const item of (step.items||[])){const tx=item?.data;if(!tx?.to){if(item?.check?.endpoint){setNotice('This route includes an external completion step. Follow Relay transaction status for the final result.');continue}throw new Error('Relay returned a step without transaction data.')}const targetChain=Number(tx.chainId||step.chainId||fromChain);if(chain?.id!==targetChain){await switchChainAsync({chainId:targetChain as any})}await sendTransactionAsync({to:tx.to as `0x${string}`,data:tx.data as `0x${string}`|undefined,value:tx.value?BigInt(tx.value):undefined,gas:tx.gas?BigInt(tx.gas):undefined});}}setNotice('Transaction submitted. Check your wallet and the transaction explorer for final settlement.');setQuote(null)}catch(e:any){setError(e?.shortMessage||e?.message||'Transaction was not completed.')}finally{setBusy(false)}}
+ async function execute(){
+  if(!quote?.steps?.length){setError('No executable quote is available. Get a fresh quote first.');return}
+  setBusy(true);setError('');setNotice('');
+  const operationId=typeof crypto!=='undefined'&&'randomUUID' in crypto?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  let savedCount=0;let submittedCount=0;
+  try{
+   for(const step of quote.steps){
+    for(const item of (step.items||[])){
+     const tx=item?.data;
+     if(!tx?.to){
+      if(item?.check?.endpoint){setNotice('Relay route has a completion step. Submitted transactions will be tracked; final cross-chain settlement must be verified separately.');continue}
+      throw new Error('Relay returned a step without transaction data.');
+     }
+     const targetChain=Number(tx.chainId||step.chainId||fromChain);
+     if(chain?.id!==targetChain) await switchChainAsync({chainId:targetChain as any});
+     const txHash=await sendTransactionAsync({to:tx.to as `0x${string}`,data:tx.data as `0x${string}`|undefined,value:tx.value?BigInt(tx.value):undefined,gas:tx.gas?BigInt(tx.gas):undefined});
+     submittedCount++;
+     try{
+      const saved=await fetch('/api/transactions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+       wallet:address,txHash,operationId,kind:'swap',
+       chainId:targetChain,destinationChainId:toChain,
+       fromChain:chains.find(c=>c.id===fromChain)?.name||`Chain ${fromChain}`,
+       toChain:chains.find(c=>c.id===toChain)?.name||`Chain ${toChain}`,
+       fromToken:fromToken.symbol,toToken:toToken.symbol,amount,
+       relayRequestId:quote?.requestId||quote?.details?.requestId||null
+      })});
+      if(saved.ok)savedCount++;
+     }catch{/* A database/network issue must not misreport an already-submitted wallet transaction as failed. */}
+    }
+   }
+   if(submittedCount===0) setNotice('No wallet transaction was submitted. Follow the route instructions to complete this Relay route.');
+   else if(savedCount===submittedCount) setNotice('Transaction submitted and saved to GAMGAM history. The page will track source-chain confirmation; cross-chain settlement may take longer.');
+   else setNotice('Transaction submitted. History storage is not fully configured or temporarily unavailable; save the transaction hash from your wallet.');
+   setQuote(null);
+  }catch(e:any){setError(e?.shortMessage||e?.message||'Transaction was not completed.')}finally{setBusy(false)}
+ }
  const filteredTokens=(modal==='from'?fromTokens:toTokens).filter(t=>`${t.symbol} ${t.name||''} ${t.address}`.toLowerCase().includes(tokenSearch.toLowerCase())).slice(0,100);
  function swapSides(){setFromChain(toChain);setToChain(fromChain);setFromToken(toToken);setToToken(fromToken);setFromTokens(toTokens);setToTokens(fromTokens);setQuote(null);setError('')}
  const outputAmount=quote?.details?.currencyOut?.amountFormatted || quote?.quote?.currencyOut?.amountFormatted || (quote?.details?.currencyOut?.amount && quote?.details?.currencyOut?.currency?.decimals !== undefined ? formatAmount(Number(quote.details.currencyOut.amount) / (10 ** Number(quote.details.currencyOut.currency.decimals)), 7) : null);
